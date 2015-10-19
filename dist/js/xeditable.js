@@ -32,7 +32,7 @@ angular.module('xeditable', [])
    */  
   icon_set: 'default',
   /**
-   * Whether to show buttons for single editalbe element.  
+   * Whether to show buttons for single editable element.  
    * Possible values `right` (default), `no`.
    * 
    * @var {string} buttons
@@ -179,20 +179,18 @@ angular.module('xeditable').directive('editableCheckbox', ['editableDirectiveFac
       directiveName: 'editableCheckbox',
       inputTpl: '<input type="checkbox">',
       render: function() {
-        this.parent.render.call( this );
-
-        if ( this.attrs.eTitle ) {
-          this.inputEl.wrap( '<label></label>' );
-          this.inputEl.parent().append( this.attrs.eTitle );
+        this.parent.render.call(this);
+        if(this.attrs.eTitle) {
+          this.inputEl.wrap('<label></label>');
+          this.inputEl.parent().append(this.attrs.eTitle);
         }
       },
       autosubmit: function() {
         var self = this;
-
         self.inputEl.bind('change', function() {
           setTimeout(function() {
             self.scope.$apply(function() {
-              self.scope[self.scope.formName].$submit();
+              self.scope.$form.$submit();
             });
           }, 500);
         });
@@ -246,131 +244,21 @@ Input types: text|email|tel|number|url|search|color|date|datetime|time|month|wee
 
 (function() {
 
-  var types = 'text|password|email|tel|number|url|search|color|date|datetime|time|month|week|file|address|distance|twitter|facebook'.split('|');
+  var types = 'text|password|email|tel|number|url|search|color|date|datetime|time|month|week|file'.split('|');
 
   //todo: datalist
   
   // generate directives
   angular.forEach(types, function(type) {
-    var directiveName = 'editable' + type.charAt(0).toUpperCase() + type.slice(1);
-
+    var directiveName = 'editable'+type.charAt(0).toUpperCase() + type.slice(1);
     angular.module('xeditable').directive(directiveName, ['editableDirectiveFactory',
-      function ( editableDirectiveFactory ) {
+      function(editableDirectiveFactory) {
         return editableDirectiveFactory({
           directiveName: directiveName,
-          inputTpl: '<input type="' + type.replace(/(address|twitter|facebook)/, 'text" id="$1').replace('distance', 'number" id="distance') + '">',
-          render: function() {
-            this.parent.render.call( this );
-
-            //console.log( this );
-
-            // @todo: might be more readable as an object
-            var inputGroupAddonIconClass = this.attrs.addonIconClass || null;
-            var inputGroupClassModifier;
-            var inputGroupAddonLabel = this.attrs.editableAddonLabel;
-            var hasInputGroupAddonLabel = angular.isDefined( inputGroupAddonLabel ) && inputGroupAddonLabel;
-            var hasId = angular.isDefined( this.attrs['eId'] ) && this.attrs['eId'];
-            var id = this.attrs['eId'];
-            var label = this.attrs['editableLabel'];
-            var distanceUnit = this.attrs['distanceUnit'];
-
-            if ( this.compactButtons ) {
-              inputGroupClassModifier = ' vxo-input-group--8x';
-            }
-
-            switch ( type ) {
-              case 'url':
-                inputGroupAddonIconClass = 'fa fa-globe fa-fw';
-                inputGroupClassModifier = ' vxo-input-group--10x';
-              break;
-
-              case 'email':
-                inputGroupAddonIconClass = 'fa fa-envelope-o fa-fw';
-
-                if ( this.compactButtons ) {
-                  inputGroupClassModifier = ' vxo-input-group--10x';
-                }
-              break;
-
-              case 'tel':
-                inputGroupAddonIconClass = 'fa fa-phone-square fa-fw';
-              break;
-
-              case 'address':
-                inputGroupAddonIconClass = 'fa fa-map-marker fa-fw';
-
-                if ( this.compactButtons ) {
-                  inputGroupClassModifier = ' vxo-input-group--' + ( this.attrs.inputSize || '20x' );
-                }
-              break;
-
-              case 'distance':
-                inputGroupAddonIconClass = 'fa fa-location-arrow fa-fw';
-
-                if ( this.compactButtons ) {
-                  inputGroupClassModifier = ' vxo-input-group--' + ( this.attrs.inputSize || '9x' );
-                }
-
-                if ( angular.isDefined( label ) && label.length ) {
-                  this.inputEl.parent().before( '<label class="vxo-distance-label" for="distance">' + label + '</label>' );
-                }
-
-                if ( angular.isDefined( distanceUnit ) && distanceUnit.length ) {
-                  switch ( distanceUnit ) {
-                    case 'mi':
-                    case 'mile':
-                    case 'miles':
-                      unitAbbr = 'mi';
-                      unitTitle = 'mile(s)';
-                    break;
-
-                    case 'km':
-                    case 'kilometre':
-                    case 'kilometres':
-                      unitAbbr = 'km';
-                      unitTitle = 'kilometre(s)';
-                    /* falls through */
-                    case 'kilometer':
-                    case 'kilometers':
-                      unitTitle = 'kilometer(s)';
-                    break;
-                  }
-
-                  this.inputEl.after( '<span class="input-group-addon"><abbr title="' + unitTitle + '" aria-label="' + unitTitle + '" style="border-bottom:none;">' + unitAbbr + '</abbr></span>' );
-                }
-              break;
-
-              case 'facebook':
-                // @todo: if icon_set
-                inputGroupAddonIconClass = 'fa fa-facebook-square fa-fw';
-              break;
-
-              case 'twitter':
-                inputGroupAddonIconClass = 'fa fa-twitter-square fa-fw';
-              break;
-
-              default:
-                inputGroupClassModifier = ' vxo-input-group--' + ( this.attrs.inputSize || '5x' );
-            }
-
-            this.inputEl.addClass('form-control');
-
-            this.controlsEl.find( '.input-group' ).addClass( inputGroupClassModifier );
-
-            if ( angular.isDefined( inputGroupAddonIconClass ) && inputGroupAddonIconClass ) {
-              //this.inputEl.wrap( '<div class="input-group' + inputGroupClassModifier + '"></div>' );
-
-              this.inputEl.before([
-                '<' + ( hasId ? 'label' : 'span' ) + ' class="input-group-addon"' + ( hasId ? ' for="' + id + '"' : '' ) + ( hasInputGroupAddonLabel ? ' title="' + inputGroupAddonLabel + '"' : '' ) + '>',
-                  '<span class="' + inputGroupAddonIconClass + '" aria-hidden="true"></span>',
-                  ( hasInputGroupAddonLabel ? '<span class="sr-only">' + inputGroupAddonLabel + '</span>' : '' ),
-                '</' + ( hasId ? 'label' : 'span' ) + '>'
-              ].join(''));
-            } // if icon
-          } // render
-        }); // return
-    }]); // function
-  }); // forEach
+          inputTpl: '<input type="'+type+'">'
+        });
+    }]);
+  });
 
   //`range` is bit specific
   angular.module('xeditable').directive('editableRange', ['editableDirectiveFactory',
@@ -381,7 +269,7 @@ Input types: text|email|tel|number|url|search|color|date|datetime|time|month|wee
         render: function() {
           this.parent.render.call(this);
           this.inputEl.after('<output>{{$data}}</output>');
-        }
+        }        
       });
   }]);
 
@@ -412,7 +300,7 @@ angular.module('xeditable').directive('editableRadiolist', [
         self.inputEl.bind('change', function() {
           setTimeout(function() {
             self.scope.$apply(function() {
-              self.scope[self.scope.formName].$submit();
+              self.scope.$form.$submit();
             });
           }, 500);
         });
@@ -430,7 +318,7 @@ angular.module('xeditable').directive('editableSelect', ['editableDirectiveFacto
         var self = this;
         self.inputEl.bind('change', function() {
           self.scope.$apply(function() {
-            self.scope[self.scope.formName].$submit();
+            self.scope.$form.$submit();
           });
         });
       }
@@ -455,7 +343,7 @@ angular.module('xeditable').directive('editableTextarea', ['editableDirectiveFac
         self.inputEl.bind('keydown', function(e) {
           if ((e.ctrlKey || e.metaKey) && (e.keyCode === 13)) {
             self.scope.$apply(function() {
-              self.scope[self.scope.formName].$submit();
+              self.scope.$form.$submit();
             });
           }
         });
@@ -565,14 +453,10 @@ angular.module('xeditable').factory('editableController',
         self.buttons = self.attrs.buttons || editableOptions.buttons;
       }
 
-      if ( $attrs['editableCompactButtons'] && $attrs['editableCompactButtons'] !== 'false' ) {
-        self.compactButtons = true;
-      }
-
       //if name defined --> watch changes and update $data in form
       if($attrs.eName) {
         self.scope.$watch('$data', function(newVal){
-          self.scope[self.scope.formName].$data[$attrs.eName] = newVal;
+          self.scope.$form.$data[$attrs.eName] = newVal;
         });
       }
 
@@ -652,26 +536,22 @@ angular.module('xeditable').factory('editableController',
     self.render = function() {
       var theme = self.theme;
 
-      var editableFormName = self.attrs['editableFormName'] || '$form';
-
       //build input
-      self.inputEl = angular.element( self.inputTpl );
+      self.inputEl = angular.element(self.inputTpl);
 
       //build controls
-      self.controlsEl = angular.element( theme.controlsTpl );
-      self.controlsEl.append( self.inputEl );
+      self.controlsEl = angular.element(theme.controlsTpl);
+      self.controlsEl.append(self.inputEl);
 
       //build buttons
-      if ( self.buttons !== 'no' ) {
-        self.buttonsEl = angular.element( theme.buttonsTpl );
-        self.submitEl = angular.element( theme.submitTpl.replace( '$form', editableFormName ) );
-        self.cancelEl = angular.element( theme.cancelTpl.replace( '$form', editableFormName ) );
-
-        if( self.icon_set ) {
-          self.submitEl.find('span:eq(0)').addClass( self.icon_set.ok );
-          self.cancelEl.find('span:eq(0)').addClass( self.icon_set.cancel );
+      if(self.buttons !== 'no') {
+        self.buttonsEl = angular.element(theme.buttonsTpl);
+        self.submitEl = angular.element(theme.submitTpl);
+        self.cancelEl = angular.element(theme.cancelTpl);
+        if(self.icon_set) {
+          self.submitEl.find('span').addClass(self.icon_set.ok);
+          self.cancelEl.find('span').addClass(self.icon_set.cancel);
         }
-
         self.buttonsEl.append(self.submitEl).append(self.cancelEl);
         self.controlsEl.append(self.buttonsEl);
         
@@ -718,26 +598,13 @@ angular.module('xeditable').factory('editableController',
       }
 
       self.inputEl.addClass('editable-input');
-
-      var ngModel = self.attrs['eNgModel'] || '$data';
-
-      self.inputEl.attr('ng-model', ngModel );
-
-      if ( self.buttons !== 'no' && self.compactButtons ) {
-        self.buttonsEl.addClass( 'input-group-btn' );
-        self.controlsEl
-          .find('.editable-input,.input-group-btn')
-          .wrapAll( '<div class="input-group"></div>' )
-        ;
-      } else {
-        self.inputEl.wrap( '<div class="input-group"></div>' );
-      }
+      self.inputEl.attr('ng-model', '$data');
 
       // add directiveName class to editor, e.g. `editable-text`
       self.editorEl.addClass(editableUtils.camelToDash(self.directiveName));
 
       if(self.single) {
-        self.editorEl.attr('editable-form', editableFormName );
+        self.editorEl.attr('editable-form', '$form');
         // transfer `blur` to form
         self.editorEl.attr('blur', self.attrs.blur || (self.buttons === 'no' ? 'cancel' : editableOptions.blurElem));
       }
@@ -765,7 +632,7 @@ angular.module('xeditable').factory('editableController',
 
       /*
       Originally render() was inside init() method, but some directives polluting editorEl,
-      so it is broken on second openning.
+      so it is broken on second opening.
       Cloning is not a solution as jqLite can not clone with event handler's.
       */
       self.render();
@@ -818,7 +685,7 @@ angular.module('xeditable').factory('editableController',
             // hide on `escape` press
             case 27:
               self.scope.$apply(function() {
-                self.scope[self.scope.formName].$cancel();
+                self.scope.$form.$cancel();
               });
             break;
           }
@@ -836,8 +703,8 @@ angular.module('xeditable').factory('editableController',
           return;
         }
 
-        if (self.scope[self.scope.formName].$visible) {
-          self.scope[self.scope.formName]._clicked = true;
+        if (self.scope.$form.$visible) {
+          self.scope.$form._clicked = true;
         }
       });
     };
@@ -991,7 +858,7 @@ function($parse, $compile, editableThemes, $rootScope, $document, editableContro
         if(ctrl[1]) {
           eFormCtrl = ctrl[1];
           hasForm = true;
-        } else if(attrs.eForm) { // element not wrapped by <form>, but we hane `e-form` attr
+        } else if(attrs.eForm) { // element not wrapped by <form>, but we have `e-form` attr
           var getter = $parse(attrs.eForm)(scope);
           if(getter) { // form exists in scope (above), e.g. editable column
             eFormCtrl = getter;
@@ -1049,37 +916,31 @@ function($parse, $compile, editableThemes, $rootScope, $document, editableContro
         // add `editable` class to element
         elem.addClass('editable');
 
-        scope.formName = attrs['editableFormName'] || '$form';
-
         // hasForm
-        if ( hasForm ) {
-          if ( eFormCtrl ) {
-
-            scope[scope.formName] = eFormCtrl;
-            
-            if ( !scope[scope.formName].$addEditable ) {
+        if(hasForm) {
+          if(eFormCtrl) {
+            scope.$form = eFormCtrl;
+            if(!scope.$form.$addEditable) {
               throw 'Form with editable elements should have `editable-form` attribute.';
             }
-
-            scope[scope.formName].$addEditable(eCtrl);
+            scope.$form.$addEditable(eCtrl);
           } else {
             // future form (below): add editable controller to buffer and add to form later
             $rootScope.$$editableBuffer = $rootScope.$$editableBuffer || {};
             $rootScope.$$editableBuffer[attrs.eForm] = $rootScope.$$editableBuffer[attrs.eForm] || [];
             $rootScope.$$editableBuffer[attrs.eForm].push(eCtrl);
-            
-            scope[scope.formName] = null; //will be re-assigned later
+            scope.$form = null; //will be re-assigned later
           }
         // !hasForm
         } else {
           // create editableform controller
-          scope[scope.formName] = editableFormController();
+          scope.$form = editableFormController();
           // add self to editable controller
-          scope[scope.formName].$addEditable(eCtrl);
+          scope.$form.$addEditable(eCtrl);
 
           // if `e-form` provided, publish local $form in scope
           if(attrs.eForm) {
-            scope.$parent[attrs.eForm] = scope[scope.formName];
+            scope.$parent[attrs.eForm] = scope.$form;
           }
 
           // bind click - if no external form defined
@@ -1089,7 +950,7 @@ function($parse, $compile, editableThemes, $rootScope, $document, editableContro
               e.preventDefault();
               e.editable = eCtrl;
               scope.$apply(function(){
-                scope[scope.formName].$show();
+                scope.$form.$show();
               });
             });
           }
@@ -1189,8 +1050,8 @@ angular.module('xeditable').factory('editableFormController',
       editable.elem.bind('$destroy', angular.bind(this, this.$removeEditable, editable));
 
       //bind editable's local $form to self (if not bound yet, below form) 
-      if ( !editable.scope[editable.scope.formName] ) {
-        editable.scope[editable.scope.formName] = this;
+      if (!editable.scope.$form) {
+        editable.scope.$form = this;
       }
 
       //if form already shown - call show() of new editable
@@ -2259,8 +2120,8 @@ angular.module('xeditable').factory('editableIcons', function() {
     },
     external: {
       'font-awesome': {
-        ok: 'fa fa-check fa-fw',
-        cancel: 'fa fa-times fa-fw'
+        ok: 'fa fa-check',
+        cancel: 'fa fa-times'
       }
     }
   };
@@ -2284,10 +2145,10 @@ angular.module('xeditable').factory('editableThemes', function() {
       noformTpl:    '<span class="editable-wrap"></span>',
       controlsTpl:  '<span class="editable-controls"></span>',
       inputTpl:     '',
-      errorTpl:     '<div class="editable-error" ng-show="$error" ng-bind-html="$error"></div>',
+      errorTpl:     '<div class="editable-error" ng-show="$error" ng-bind="$error"></div>',
       buttonsTpl:   '<span class="editable-buttons"></span>',
-      submitTpl:    '<button type="submit">Save</button>',
-      cancelTpl:    '<button type="button" ng-click="$form.$cancel()">Cancel</button>'
+      submitTpl:    '<button type="submit">save</button>',
+      cancelTpl:    '<button type="button" ng-click="$form.$cancel()">cancel</button>'
     },
 
     //bs2
@@ -2296,12 +2157,11 @@ angular.module('xeditable').factory('editableThemes', function() {
       noformTpl:   '<span class="editable-wrap"></span>',
       controlsTpl: '<div class="editable-controls controls control-group" ng-class="{\'error\': $error}"></div>',
       inputTpl:    '',
-      errorTpl:    '<div class="editable-error help-block" ng-show="$error" ng-bind-html="$error"></div>',
+      errorTpl:    '<div class="editable-error help-block" ng-show="$error" ng-bind="$error"></div>',
       buttonsTpl:  '<span class="editable-buttons"></span>',
       submitTpl:   '<button type="submit" class="btn btn-primary"><span></span></button>',
       cancelTpl:   '<button type="button" class="btn" ng-click="$form.$cancel()">'+
                       '<span></span>'+
-                      '<span class="sr-only">Cancel</span>'+
                    '</button>'
 
     },
@@ -2312,15 +2172,11 @@ angular.module('xeditable').factory('editableThemes', function() {
       noformTpl:   '<span class="editable-wrap"></span>',
       controlsTpl: '<div class="editable-controls form-group" ng-class="{\'has-error\': $error}"></div>',
       inputTpl:    '',
-      errorTpl:    '<div class="editable-error help-block" ng-show="$error" ng-bind-html="$error"></div>',
+      errorTpl:    '<div class="editable-error help-block" ng-show="$error" ng-bind="$error"></div>',
       buttonsTpl:  '<span class="editable-buttons"></span>',
-      submitTpl:   '<button type="submit" class="btn btn-primary" title="Save">'+
-                     '<span aria-hidden="true"></span>'+
-                     '<span class="sr-only">Save</span>'+
-                   '</button>',
-      cancelTpl:   '<button type="button" class="btn btn-default" ng-click="$form.$cancel()" title="Cancel">'+
-                     '<span aria-hidden="true"></span>'+
-                     '<span class="sr-only">Cancel</span>'+
+      submitTpl:   '<button type="submit" class="btn btn-primary"><span></span></button>',
+      cancelTpl:   '<button type="button" class="btn btn-default" ng-click="$form.$cancel()">'+
+                     '<span></span>'+
                    '</button>',
 
       //bs3 specific prop to change buttons class: btn-sm, btn-lg
@@ -2344,7 +2200,6 @@ angular.module('xeditable').factory('editableThemes', function() {
           case 'editableTime':
           case 'editableMonth':
           case 'editableWeek':
-          case 'editableDistance':
             this.inputEl.addClass('form-control');
             if(this.theme.inputClass) {
               // don`t apply `input-sm` and `input-lg` to select multiple
