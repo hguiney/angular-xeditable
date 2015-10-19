@@ -281,14 +281,14 @@ Input types: text|email|tel|number|url|search|color|date|datetime|time|month|wee
             switch ( type ) {
               case 'url':
                 inputGroupAddonIconClass = 'fa fa-globe fa-fw';
-                inputGroupClassModifier = ' vxo-input-group--10x'
+                inputGroupClassModifier = ' vxo-input-group--10x';
               break;
 
               case 'email':
                 inputGroupAddonIconClass = 'fa fa-envelope-o fa-fw';
 
                 if ( this.compactButtons ) {
-                  inputGroupClassModifier = ' vxo-input-group--10x'
+                  inputGroupClassModifier = ' vxo-input-group--10x';
                 }
               break;
 
@@ -350,8 +350,10 @@ Input types: text|email|tel|number|url|search|color|date|datetime|time|month|wee
               break;
 
               default:
-                inputGroupClassModifier = ' vxo-input-group--' + ( this.attrs.inputSize || '7x' );
+                inputGroupClassModifier = ' vxo-input-group--' + ( this.attrs.inputSize || '5x' );
             }
+
+            this.inputEl.addClass('form-control');
 
             this.controlsEl.find( '.input-group' ).addClass( inputGroupClassModifier );
 
@@ -379,7 +381,7 @@ Input types: text|email|tel|number|url|search|color|date|datetime|time|month|wee
         render: function() {
           this.parent.render.call(this);
           this.inputEl.after('<output>{{$data}}</output>');
-        }        
+        }
       });
   }]);
 
@@ -716,7 +718,10 @@ angular.module('xeditable').factory('editableController',
       }
 
       self.inputEl.addClass('editable-input');
-      self.inputEl.attr('ng-model', '$data');
+
+      var ngModel = self.attrs['eNgModel'] || '$data';
+
+      self.inputEl.attr('ng-model', ngModel );
 
       if ( self.buttons !== 'no' && self.compactButtons ) {
         self.buttonsEl.addClass( 'input-group-btn' );
